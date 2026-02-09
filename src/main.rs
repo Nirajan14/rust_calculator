@@ -40,17 +40,41 @@ impl CalculatorApp {
 
 impl eframe::App for CalculatorApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+
+        ctx.input(|i| {
+            for event in &i.events {
+                if let egui::Event::Text(text) = event {
+                    if text.chars().all(|c| "0123456789.+-*/".contains(c)) {
+                        self.input.push_str(text);
+                    }
+                }
+
+                if let egui::Event::Key {
+                    key,
+                    pressed: true,
+                    ..
+                } = event
+                {
+                    match key {
+                        egui::Key::Enter => self.calculate(),
+                        egui::Key::Backspace => self.backspace(),
+                        egui::Key::Escape => self.clear(),
+
+                        _ => {}
+                    }
+                }
+            }
+        });
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.spacing_mut().item_spacing = egui::vec2(10.0, 10.0);
 
             ui.add_space(10.0);
 
-            // Title
             ui.heading("Calculator");
 
             ui.add_space(15.0);
 
-            // Display Box
             egui::Frame::none()
                 .inner_margin(egui::Margin::same(15.0))
                 .show(ui, |ui| {
@@ -71,7 +95,6 @@ impl eframe::App for CalculatorApp {
 
             ui.add_space(20.0);
 
-            // Buttons Grid
             let buttons = [
                 ["C", "X", "/", "*"],
                 ["7", "8", "9", "-"],
@@ -116,7 +139,7 @@ impl eframe::App for CalculatorApp {
             ui.add_space(10.0);
 
             ui.label(
-                egui::RichText::new("Built with Rust and egui")
+                egui::RichText::new("Keyboard Supported: Enter, Backspace, Esc")
                     .size(14.0)
                     .color(egui::Color32::GRAY),
             );
